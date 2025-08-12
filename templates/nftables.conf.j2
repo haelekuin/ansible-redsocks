@@ -1,0 +1,21 @@
+#!/usr/sbin/nft -f
+flush ruleset
+
+table ip nat {
+    chain REDSOCKS {
+        type nat hook output priority 0; policy accept;
+        ip daddr 0.0.0.0/8      return
+        ip daddr 10.0.0.0/8     return
+        ip daddr 100.64.0.0/10  return
+        ip daddr 127.0.0.0/8    return
+        ip daddr 169.254.0.0/16 return
+        ip daddr 172.16.0.0/12  return
+        ip daddr 192.168.0.0/16 return
+        ip daddr 198.18.0.0/15  return
+        ip daddr 224.0.0.0/4    return
+        ip daddr 240.0.0.0/4    return
+
+        tcp dport 80 redirect to {{ redsocks_local_port }};
+        tcp dport 443 redirect to {{ redsocks_local_port }};
+    }
+}

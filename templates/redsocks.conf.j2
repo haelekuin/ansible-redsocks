@@ -1,0 +1,14 @@
+base {
+    log_debug = on;
+    log_info = on;
+    daemon = on;
+    redirector = iptables;
+}
+
+redsocks {
+    local_ip = 0.0.0.0;
+    local_port = {{ redsocks_local_port }};
+    ip = {{ redsocks_remote_ip }};
+    port = {{ redsocks_remote_port }};
+    type = http-connect;
+}

@@ -1,0 +1,12 @@
+---
+- name: Restart redsocks
+  ansible.builtin.systemd:
+    name: redsocks
+    state: restarted
+    enabled: true
+
+- name: Restart nftables
+  ansible.builtin.systemd:
+    name: nftables
+    state: restarted
+    enabled: true

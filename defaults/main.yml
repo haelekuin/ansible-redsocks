@@ -1,0 +1,4 @@
+---
+redsocks_remote_ip: ""
+redsocks_remote_port: 3128
+redsocks_local_port: 12345
