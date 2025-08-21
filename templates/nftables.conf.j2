@@ -15,7 +15,6 @@ table ip nat {
         ip daddr 224.0.0.0/4    return
         ip daddr 240.0.0.0/4    return
 
-        tcp dport 80 redirect to {{ redsocks_local_port }};
         tcp dport 443 redirect to {{ redsocks_local_port }};
     }
 }
