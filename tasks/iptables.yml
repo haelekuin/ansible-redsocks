@@ -1,0 +1,58 @@
+---
+- name: Apply redsocks iptables rules
+  block:
+    - name: Add REDSOCKS chain
+      ansible.builtin.iptables:
+        table: nat
+        chain: REDSOCKS
+        chain_management: true
+        state: present
+
+    - name: Exclude private network ranges
+      ansible.builtin.iptables:
+        table: nat
+        chain: REDSOCKS
+        destination: "{{ item }}"
+        jump: RETURN
+      loop: "{{ redsocks_exclude_net }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Redirect HTTPS to REDSOCKS port
+      ansible.builtin.iptables:
+        table: nat
+        chain: REDSOCKS
+        protocol: tcp
+        destination_port: 443
+        jump: REDIRECT
+        to_ports: "{{ redsocks_local_port }}"
+
+    - name: Redirect outgoing HTTPS traffic to REDSOCKS port
+      ansible.builtin.iptables:
+        table: nat
+        chain: OUTPUT
+        protocol: tcp
+        destination_port: 443
+        jump: REDSOCKS
+
+    - name: Configure docker rules.
+      when: redsocks_docker_enable
+      block:
+        - name: Add Docker DNAT rule
+          ansible.builtin.iptables:
+            table: nat
+            chain: REDSOCKS
+            source: 172.16.0.0/12
+            protocol: tcp
+            destination_port: 443
+            jump: DNAT
+            to_destination: "127.0.0.1:{{ redsocks_local_port }}"
+
+        - name: Add prerouting chain to redsocks traffic
+          ansible.builtin.iptables:
+            table: nat
+            chain: PREROUTING
+            source: 172.16.0.0/12
+            protocol: tcp
+            destination_port: 443
+            jump: REDSOCKS
