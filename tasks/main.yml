@@ -1,9 +1,8 @@
 ---
-- name: Install Redsocks and nftables
+- name: Install Redsocks
   ansible.builtin.package:
     name:
       - redsocks
-      - nftables
     state: present
 
 - name: Configure Redsocks config
@@ -15,23 +14,14 @@
     mode: '0640'
   notify: Restart redsocks
 
-- name: Configure nftables rules
-  ansible.builtin.template:
-    src: nftables.conf.j2
-    dest: /etc/nftables.conf
-    owner: root
-    group: adm
-    mode: '0640'
-  notify: Restart nftables
+- name: Install nftables.
+  when:
+    - redsocks_firewall == 'nftables'
+  ansible.builtin.include_tasks:
+    file: nftables.yml
 
-- name: Enable redsocks service
-  ansible.builtin.systemd:
-    name: redsocks
-    state: started
-    enabled: true
-
-- name: Enable nftables service
-  ansible.builtin.systemd:
-    name: nftables
-    state: started
-    enabled: true
+- name: Install iptables.
+  when:
+    - redsocks_firewall == 'iptables'
+  ansible.builtin.include_tasks:
+    file: iptables.yml
